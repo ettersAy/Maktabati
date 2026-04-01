@@ -1,7 +1,6 @@
 cat > .gitignore <<EOF
 # Dependencies
 node_modules/
-package-lock.json
 
 # VitePress Build & Cache
 docs/.vitepress/dist/
