@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy to GitHub Pages
 
 on:
@@ -12,7 +13,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true # Cancel in-progress deploys on new push
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -51,6 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 10
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }} # <--- CRITICAL: Expose output here
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -59,11 +62,9 @@ jobs:
   test-production:
     name: E2E Test on Production
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: deploy # Wait for deploy to finish
     timeout-minutes: 10
     continue-on-error: false
-    env:
-      E2E_BASE_URL: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -84,11 +85,11 @@ jobs:
         run: |
           echo "Waiting for GitHub Pages to propagate..."
           for i in {1..30}; do
-            if curl -sf "${{ env.E2E_BASE_URL }}" > /dev/null 2>&1; then
-              echo "✓ Site is live"
+            if curl -sf "${{ needs.deploy.outputs.page_url }}" > /dev/null 2>&1; then
+              echo "✓ Site is live at ${{ needs.deploy.outputs.page_url }}"
               break
             fi
-            echo "⏳ Attempt $i/30..."
+            echo "⏳ Attempt $i/30... waiting 2s"
             sleep 2
           done
 
@@ -100,7 +101,7 @@ jobs:
             --project=chromium \
             --max-failures=1
         env:
-          E2E_BASE_URL: ${{ env.E2E_BASE_URL }}
+          E2E_BASE_URL: ${{ needs.deploy.outputs.page_url }} # <--- FIXED: Use needs instead of steps
 
       - name: Upload test report
         if: always()
@@ -110,15 +111,8 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      # Optional: Notify on failure (Slack/Discord)
       - name: Notify on failure
         if: failure()
         run: |
-          echo "❌ E2E tests failed on ${{ env.E2E_BASE_URL }}"
+          echo "❌ E2E tests failed on ${{ needs.deploy.outputs.page_url }}"
           echo "Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          # Add Slack/Discord webhook here if needed:
-          # curl -X POST -H 'Content-type: application/json' \
-          #   --data "{\"text\":\"❌ Deploy failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
-          #   ${{ secrets.DISCORD_WEBHOOK }}
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
