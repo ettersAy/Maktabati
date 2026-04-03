@@ -7,6 +7,14 @@ description: List of commune prompts
 
 ## Stack Assistance
 
+```Markdown
+- can you explain more the `Path Check` note I didn't understand what I have to check and what I should change. also I provided you with `playwright.config.js` so you can checked.
+
+- about `Force Push Warning` what are the best practices to revert if the e2e test fails. or no need to revert are the github action revert automaticly if e2e fails?
+
+- another point check Makefile is it best practice and commune to have all those cmd inside this file or it's better to extract them in a script shell and call this script before executing the main cmd ? what are the best practices and commune between senior devs
+```
+
 
 ```Markdown
 
