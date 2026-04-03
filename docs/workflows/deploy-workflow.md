@@ -66,7 +66,7 @@ run: npx playwright install --with-deps chromium
 # 3. Failure notifications (Slack/Discord)
 - name: Notify on failure
   if: failure()
-  run: curl -X POST ... ${{ secrets.WEBHOOK }}
+  run: curl -X POST ... \$\{\{ secrets.WEBHOOK }}
 
 # 4. Environment protection rules
 # Configure in GitHub Repo Settings > Environments > github-pages
@@ -77,7 +77,7 @@ run: npx playwright install --with-deps chromium
 - name: Deploy
   id: deployment
   uses: actions/deploy-pages@v4
-# Then use: ${{ steps.deployment.outputs.page_url }}
+# Then use: \$\{\{ steps.deployment.outputs.page_url }}
 ```
 
 ## 🔄 Rollback Strategy
