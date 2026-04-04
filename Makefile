@@ -152,6 +152,7 @@ e2e-report:
 
 clean:
 	rm -rf node_modules docs/.vitepress/dist
+
 gitpush:
 	echo "Building documentation..."
 	make build

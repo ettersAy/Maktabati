@@ -9,6 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
+    // Use env var if provided (CI), otherwise fallback to local
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:4173/maktabati/',
     trace: 'on-first-retry',
   },
@@ -18,9 +19,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
+  // ⚠️ CRITICAL FIX: Only start webServer if NOT in CI
+  // In CI, we test the live GitHub Pages URL, not a local preview
+  webServer: process.env.CI ? undefined : {
     command: 'npm run docs:preview',
     url: 'http://localhost:4173/maktabati/',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
   },
 });
